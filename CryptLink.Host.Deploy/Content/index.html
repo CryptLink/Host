@@ -1,0 +1,125 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Demo time</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/css/bootstrap.min.css" rel="stylesheet" media="screen">
+</head>
+<body>
+    <nav class="navbar navbar-inverse">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">CryptLink - Demo Form</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <div class="starter-template">
+            <h1>Hello World</h1>
+            <p class="lead">Demo of end-to-end encryption with a self-propagating form</p>
+        </div>
+
+        <form action="/store-string" method="post" id="message">
+            <div class="form-group">
+                <label for="key">Key</label>
+                <input type="password" class="form-control" id="key" placeholder="">
+            </div>
+            <div class="form-group">
+                <label for="value">Message</label>
+                <textarea class='form-control' name='value' id='value' rows='7'>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</textarea>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-10">
+                    <button type="button" class="btn btn-secondary" onclick="encryptText()">Encrypt</button>
+                    <button type="button" class="btn btn-secondary" onclick="decryptText()">Decrypt</button>
+                    <button type="submit" class="btn btn-primary" onclick="submitSelf('html')">Send</button>
+                    <button type="submit" class="btn btn-primary" onclick="submitSelf('text')">Send Data</button>
+                </div>
+            </div>
+        </form>
+
+        <div id="status"></div>
+
+        <!--
+        <img style="float:right;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAABHNCSVQICAgIfAhkiAAAA9dJREFUeJzt3UFu2zgYBWA6mOl9uuj9D5BFztNxUXfRFBgU6WMRRuJP6vsALw0zkh7o8JlSawAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADs7DZ7AAXcW2uP11clt9fXv7MHcmX/zB5AAY9W9yK8zx7A1T3NHkAB1WaO/6s8tksQEAgEBAIBgUBAIBCQ2seg8tguYYdl3pEe4+nxeLy01r587JA+zMvtdru31r6/4716lA+wQ1H4Xxu4CB6P2iupt9vQKbq31j590FAuaYcpvPYVPpdjM2iHgMBhBAQCAYFAQCDYISA7/A1HcWwGrdCDpJ6jeo8xbHAZOvUoepK/sEIPEnuO6j3GbJ0eRU/SscIULAHHcWw7VggITCMgEAgIBAICwQoBWWGMq3JsOyr0IJfuOY7WWQbXk3RU6EH0HBPpSbIKU6wE1HX5c1MhIFCWgEAgIBAICAQCAkGFHmRI77Y4vWXi0fezNzMIBAICgYBAICAQCAgEAgJBhYBUGANvu/y5OaMHsd9jwODjD7o9jv0i2Rn7QQ7d77F7UXh0QAY/f/v9ImdMoarofW1/bi//HRMSAYFAQCAQEAgEBILl94OMLmNWX8advQx+dWYQCAQEAgGBQEAgEBAIBAQCAYGgfg/S+7l3bx1/9vs79BC1mUEgEBAIBAQCAYFAQCAQEAgEhBHbXz/1e5CewdviDL9/sqP3e1z9vllnXB1fW7h3UvcEVr+AN99wNfj5y983a/spkqmW/5mAgEAgIBAICAQCAoGAQLB+D3Jx9pMcywwCgYBAICAQCAgEAgLBGQEp/mtD+LOzAnJvP592+/vrW2vt+YQxwLuc0YPE/QCv+wn+qPzP4Q++bxZzVfgf5K3NNlBChYBAWQICgYBAICAQCAhHWr4DExBGPLefXdZbHde9bRCQCn/AsbcFqv7+4jq39fnWFr/vVY8ZhBHbd1gCAoGAQCAgEAgIBBUCUmEljffZ/txVCYj9IjVt33P0rPAH3lvYt+K+UFnv8Qgd2/ccPRVmkJ7t19oLu/yxXyEgMI2AQCAgEAgIBCsEZIWVtl1d/tiv8PiDXz3JW+u5T621l9bal1NHtI7n1trn9r7VqF+Pcb60HQ5A7ElGze5Z9BhzrfAVq+fya/WBYzNoh4DAYQQEAgGBQEAg2CEgO6zEHcWxGbRCD9KTepJRs3sWPcZkDmDfoT1Lhx5jsh2+Yh1tZpegx5hMQCAQEAgEBAIBgUBA+mau9FllnGyHHuRoR/Ysvc8VEAAAAAAAAAAAAAAAAAAAAAAAAKD9AO1i4YakL1GSAAAAAElFTkSuQmCC" />
+        -->
+        <img style="float:right; height:50px;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAIAAAAiOjnJAAAFiklEQVR4nOzd3U+WdRzH8WzOOJDEM7GOqq2E2ea9lQg2sNIGI1J3C0bGtHXikChtLPGxhUCbrJW6JawONEVaRGBnPVAubYGug7wvxpZwYLjFHUvc7t23G9vVQVuuQkX8fa7f9fB+/QG/+3vJe98L2OXFXNd17wFMu9f2AAgnwoIEYUGCsCBBWJAgLEgQFiQICxKEBQnCggRhQYKwIEFYkCAsSBAWJAgLEoQFCcKCBGFBgrAgQViQICxIEBYk5toewKRfLibS6bTtKYIqe372kiWPGjvODYvPPu819o8SSaVl5Qa/HCG5Fe7dtz++/gXbU+CGwN8KM5nrtdvqPv6ow/Yg+Jdgb6zxZLK2tpaqfCjAG2s8mSxYXjA6OmJ7EEwjqBvLGRouKy2jKt8K5Mb64ey5p1YW2Z4CtxKwjTU1NdXbd3rTS9W2B8FtBGxjdXZ21dRssj0Fbi8wYaVSqeaW1o72o7YHwYwEJqydjbsOffC+7SkwUwH4Hmts7ErVxhepKlgCsLGqq6vPnPne9hS4M77eWBcu/FywopCqgsi/GyvhDNXUvOw4CduDYDZ8urF6vuhdWVREVcHlx43V3dMXX7/W9hS4K77bWC2t7/JkVQj4KKxM5vqevfsbd75lexAY4Jdb4eTktYaGhnZ+sR4WvgiLJ6vCx/6t0BkaXrd2HVWFjOWN5QwN5+c9ZncGKNjcWN/2f1dW+pzFAaBjbWMdP36CJ6tCzEJYqVTq8OEjbW0Hvf9oeMZCWM0trc0Hmrz/XHjJ07CSyT+21dV92nXKyw+FFZ6GFY/HeQYmIjz6qTCRcIqLS6gqOrzYWJOT1yorK3kGJlLkG6vv9JexWIyqoka7sbp7+l59ZfPVq39KP2V24huqiktW2Z7CRxbn5po8zuC7tv7jYNt7Jgc1qnHX7nQ6o7t2qMLavWef7Xhu6tCRD0VXjX+YDyudzmzdWms7nunl5Cw82t5h/JLxf4bD+n18PL6hynY/08vJWXgx4Zi9XtyMybB+vTSyevUa2/1MLy8v/+y5Hw1eLG7N2E+Fl0ZGH3n4IVOnmbVsWay/v3/BgvttDxIhxn6PNTExYeoos555dk13dzdVecwXz7zrVFZt7DrVaXuKKAptWFlZWdt3vPl6fb3tQSIqtGE1HWjesf0N21NEl/3/pWPcokW5x459Uv9ane1BIi2EG+vEyZNPryqxPUXUzXFd18hBA4Pnlz/5hJGj7kZeXv6KwkIjR1U8X15RUWHkqAgK28ZynISpR3QefGAxYc1aCL/Hgh8QFiQICxKEBQnCggRhQYKwIEFYkCAsSBAWJAgLEoQFCcKCBGFBgrAgQViQICxIEBYkCAsShAUJwoIEYUGCsCBBWJAgLEgQFiQICxKEBQnCggRhQYKwIEFYkCAsSBAWJAgLEoQFCcKCBGFBgrAgQViQCNsfEDBobOzKwOB521Pc8PjSpVlZ99meYsZM/anWnwYGbV9KyF2+/JupL5YHuBVCgrAgQViQICxIEBYkCAsShAUJwoIEYUGCsCBBWJAgLEgQFiQICxKEBQnCggRhQYKwIEFYkCAsSBAWJAgLEoQFCcKCBGFBgrAgQViQICxI8LaZwNi8Zcu8ecK3zcRisaZ33jZ1GmEFxjdff2V7hDvArRAShAUJwoIEYUGCsCBBWJAgLEgQFiQICxKEBQnCggRhQYKwIEFYkCAsSBAWJAgLEoQFCcKCBGFBgrAgQViQICxIEBYkCAsShAUJwoIEYUGCsCBBWJAw9hqj7PnzS8vKTZ0G78ViMYOnzXFd1+BxwN+4FUKCsCBBWJAgLEgQFiQICxKEBQnCggRhQYKwIEFYkCAsSBAWJAgLEoQFCcKCBGFBgrAgQViQICxIEBYkCAsShAUJwoLEXwEAAP//oBeSDGucTp0AAAAASUVORK5CYII=" />
+
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.2/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
+    <script type="text/javascript">
+
+        function encryptText() {
+            var text = $('textarea#value').val();
+            var key = $('input#key').val();
+            var encrypted = CryptoJS.AES.encrypt(text, key);
+            $('textarea#value').val(encrypted.toString());
+        }
+
+        function decryptText() {
+            var text = $('textarea#value').val();
+            var key = $('input#key').val();
+
+            try {
+                var decrypted = CryptoJS.AES.decrypt(text, key);
+                $('textarea#value').val(decrypted.toString(CryptoJS.enc.Utf8));
+            }
+            catch (err) {
+                $("#status").emply();
+                $("#status").append("<div>Error decrypting, invalid data or passord</div>");
+            }
+        }
+
+        function submitSelf(type) {
+            //$("#status").empty();
+
+            if (type == "html") {
+                var markup = document.documentElement.innerHTML;
+                var textArea = "<textarea class=\"form-control\" name=\"value\" id=\"value\" rows=\"7\">";
+                var insertAt = markup.indexOf(textArea) + textArea.length;
+                var insertEnd = markup.indexOf("</textarea>");
+                var markupEnd = markup.substring(insertEnd);
+
+                markup = markup.substring(0, insertAt) + $('textarea#value').val() + markupEnd;
+                $('textarea#value').val(markup);
+            }
+
+            var sent = false;
+
+            $("form#message").submit(function (e) {
+                if (sent) {
+                    return;
+                }
+
+                //$(this).children('#key').remove();
+                var form = $(this);
+                var url = form.attr('action');
+
+                console.log(form.serialize());
+
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data: form.serialize(),
+                    success: function (data) {
+                        $("#status").append("<div>Saved to: <a href='/get/" + (data) + "/" + type + "'>" + data + "</a></div>");
+                    }
+                });
+
+                sent = true;
+                e.preventDefault();
+            });
+        }
+    </script>
+</body>
+</html>
