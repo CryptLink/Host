@@ -19,8 +19,7 @@
     },
     "CryptLink.Host": {
       "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "/",
+      "launchUrl": "info",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

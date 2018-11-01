@@ -7,9 +7,13 @@
 
   <ItemGroup>
     <Compile Remove="CryptLink.Host.Deploy\**" />
+    <Compile Remove="Tests\**" />
     <Content Remove="CryptLink.Host.Deploy\**" />
+    <Content Remove="Tests\**" />
     <EmbeddedResource Remove="CryptLink.Host.Deploy\**" />
+    <EmbeddedResource Remove="Tests\**" />
     <None Remove="CryptLink.Host.Deploy\**" />
+    <None Remove="Tests\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -17,11 +21,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CryptLink.CertBuilder" Version="1.0.3" />
-    <PackageReference Include="CryptLink.ConsistentHash" Version="1.0.3" />
-    <PackageReference Include="CryptLink.HashedObjectStore" Version="1.2.0" />
-    <PackageReference Include="CryptLink.SigningFramework" Version="1.3.3" />
+    <PackageReference Include="CryptLink.CertBuilder" Version="1.1.0" />
+    <PackageReference Include="CryptLink.ConsistentHash" Version="1.1.0" />
+    <PackageReference Include="CryptLink.HashedObjectStore" Version="1.3.0" />
+    <PackageReference Include="CryptLink.SigningFramework" Version="1.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="RestSharp.NetCore" Version="105.2.3" />
   </ItemGroup>
 
 </Project>

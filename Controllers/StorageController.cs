@@ -11,15 +11,29 @@ using System.Net.Http.Headers;
 using System.Net.Http;
 using System.Net;
 using Microsoft.AspNetCore.Http;
+using CryptLink.Host.Entities;
+using CryptLink.Host.Extentions;
 
-namespace CryptLink.Host.Controllers
-{
-    //[Route("api/[controller]")]
+namespace CryptLink.Host.Controllers {
+
     [ApiController]
-    public class StorageController : ControllerBase
-    {
+    public class StorageController : ControllerBase {
         private static HashProvider provider = HashProvider.SHA256;
         private static IHashItemStore memStore = Factory.Create(typeof(MemoryStore), provider);
+        private static IHashItemStore fileStore = Factory.Create(typeof(FileStore), provider);
+        private static ConsistentHash<PeerInfo> peers = new ConsistentHash<PeerInfo>(provider);
+        public static PeerInfo HostInfo { get; set; }
+        public static int ReplicationWeightMax { get; set; } = 1000;
+
+        private void CheckHostInfo() {
+            if (HostInfo == null) {
+                HostInfo = new PeerInfo() {
+                    Address = $"{Request.Scheme}://{Request.Host}"
+                };
+
+                HostInfo.SetCert(Program.HostCert, provider);
+            }
+        }
 
         /// <summary>
         /// Gets a standard type
@@ -33,7 +47,6 @@ namespace CryptLink.Host.Controllers
             }
 
             var parsedBytes = Utility.DecodeBytes(hash, false);
-
             if (parsedBytes == null) {
                 throw new ArgumentException("Hash B64 can't be parsed");
             }
@@ -66,11 +79,8 @@ namespace CryptLink.Host.Controllers
                     case "text":
                         type = "text/plain";
                         break;
-                    case "zip":
-                        type = "application/pdf";
-                        asBinary = true;
-                        break;
                     case "jpeg":
+                    case "jpg":
                         type = "image/jpeg";
                         asBinary = true;
                         break;
@@ -82,6 +92,7 @@ namespace CryptLink.Host.Controllers
                         type = "image/gif";
                         asBinary = true;
                         break;
+                    case null:
                     case "binary":
                         type = "application/octet-stream";
                         asBinary = true;
@@ -91,121 +102,52 @@ namespace CryptLink.Host.Controllers
                         break;
                 }
 
-                if (asBinary) {
-                    var item = memStore.GetItem<HashableBytes>(parsedHash);
-                    if (item == null) {
-                        throw new FileNotFoundException();
-                    }
-                    return Content(Utility.EncodeBytes(item.Value), type, Encoding.ASCII);
+                var item = memStore.GetItem<HashableBytes>(parsedHash);
+                if (item == null) {
+                    throw new FileNotFoundException();
                 } else {
-                    var item = memStore.GetItem<HashableString>(parsedHash);
-                    if (item == null) {
-                        throw new FileNotFoundException();
-                    }
-                    return Content(item.Value, type, Encoding.ASCII);
+                    Response.StatusCode = 200;
+                    Response.ContentType = type;
+                }
+
+                if (asBinary) {
+                    return item.Value;
+                } else {
+                    var encoding = new ASCIIEncoding();
+                    return encoding.GetString(item.Value);
                 }
 
             }
         }
 
-        [HttpGet("test1")]
-        [Route("test1")]
-        public void Test() {
-            Response.StatusCode = 200;
-            Response.ContentType = "text/plain";
-
-            using (Response.Body) {
-                using (var sw = new StreamWriter(Response.Body)) {
-                    sw.Write("Hi there!");
-                }
-            }
-        }
-
-        [HttpGet("test2")]
-        [Route("test2")]
-        public FileStreamResult GetTest() {
-            var stream = new MemoryStream(Encoding.ASCII.GetBytes("Hello World"));
-
-            //return new FileStreamResult(stream, new MediaTypeHeaderValue("text/plain")) {
-            return new FileStreamResult(stream, "text/plain") {
-                FileDownloadName = "test.txt"
-            };
-        }
-
-        public static MemoryStream GetTextStream(string Message) {
-            return new MemoryStream(Encoding.ASCII.GetBytes(Message));
-        }
-
-        [HttpPost("store-string")]
-
-        public object StoreString([FromForm] string value) {
+        [HttpPost("store")]
+        public Hash StoreString([FromForm] string value) {
 
             if (value == null) {
                 throw new ArgumentException("Value was null");
             }
 
-            var hs = new HashableString((string)value, provider);
+            var encoding = new ASCIIEncoding();
+
+            var hs = new HashableBytes(encoding.GetBytes(value), provider);
             hs.ComputeHash(provider, null);
             memStore.StoreItem(hs);
 
-            return Utility.EncodeBytes(hs.ComputedHash.Bytes, true, false);
+            return hs.ComputedHash;
         }
 
-        //public HttpResponseMessage Post(string version, string environment, string filetype) {
-        //    var path = @"C:\Temp\test.exe";
-        //    HttpResponseMessage result = new HttpResponseMessage(HttpStatusCode.OK);
-        //    var stream = new FileStream(path, FileMode.Open, FileAccess.Read);
-        //    result.Content = new StreamContent(stream);
-        //    result.Content.Headers.ContentType =
-        //        new MediaTypeHeaderValue("application/octet-stream");
-        //    return result;
+        //public bool ForwardObjectToPeer(PeerInfo Peer, IHashable Item) {
+        //    return false;
         //}
 
-        //[HttpPost("store")]
-        //public async Task<IActionResult> Post(List<IFormFile> files) {
-        //    long size = files.Sum(f => f.Length);
-
-        //    // full path to file in temp location
-        //    var filePath = Path.GetTempFileName();
-
-        //    foreach (var formFile in files) {
-        //        if (formFile.Length > 0) {
-        //            using (var stream = new FileStream(filePath, FileMode.Create)) {
-        //                await formFile.CopyToAsync(stream);
-        //            }
-        //        }
-        //    }
-
-        //    // process uploaded files
-        //    // Don't rely on or trust the FileName property without validation.
-
-        //    return Ok(new { count = files.Count, size, filePath });
-        //}
-
-        [HttpPost("store-binary")]
-        public string StoreBinary() {
-
-            //Span<byte> buffer = new Span<byte>();
-            //List<byte> allBytes = new List<byte>();
-            //int position = 0;
-            //int readBytes = 0;
-            //bool doneReading = false;
-            //int length = Request.Body.Read(buffer);
-
-            //while (doneReading == false){
-            //  readBytes = Request.Body.Read(buffer);
-
-            //if (readBytes == 0) {
-            //    doneReading = true;
-            //} else {
-            //    allBytes.AddRange(buffer.Take(readBytes));
-            //}
-
-            //position += readBytes;
-            //}
+        [HttpPost("upload")]
+        public Hash StoreBinary(IFormFile file) {
+            if (file == null) {
+                throw new ArgumentException("Upload payload was null");
+            }
 
             var ms = new MemoryStream();
-            Request.Body.CopyTo(ms);
+            file.CopyTo(ms);
 
             var hs = new HashableBytes(ms.ToArray(), provider);
             ms.Dispose();
@@ -213,25 +155,32 @@ namespace CryptLink.Host.Controllers
             hs.ComputeHash(provider, null);
             memStore.StoreItem(hs);
 
+            Console.WriteLine(hs.ComputedHash.ToString());
+
             Response.StatusCode = 200;
             Response.ContentType = "text/plain";
-            Response.Body = GetTextStream(hs.ComputedHash.ToString());
-            Console.WriteLine(hs.ComputedHash.ToString());
-            return Utility.EncodeBytes(hs.ComputedHash.Bytes, true, false);
-
-            //return "ok";
+            return hs.ComputedHash;
         }
 
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
+        [HttpPost("register")]
+        public Hash RegisterPeer([FromForm]PeerInfo peer) {
+
+            if (peer == null || peer.ComputedHash == null) {
+                throw new ArgumentNullException("Peer info or peer cert was null");
+            }
+
+            peer.ComputeHash(provider);
+            peer.ReplicationWeight = Math.Min(peer.ReplicationWeight, ReplicationWeightMax);
+
+            peers.Add(peer, true, peer.ReplicationWeight);
+            return peer.ComputedHash;
         }
 
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+        [HttpGet("info")]
+        public PeerInfo GetHostInfo() {
+            CheckHostInfo();
+            return HostInfo;
         }
+
     }
 }
