@@ -28,7 +28,9 @@ namespace CryptLink.Host.Tests
 
             //ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
             ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
-            peer.StoreAsync(Guid.NewGuid().ToString()).Wait();
+            peer.Store(Guid.NewGuid().ToString());
+
+            
 
             Assert.NotNull(peer);
             process.Kill();
@@ -53,7 +55,7 @@ namespace CryptLink.Host.Tests
                 }
 
                 foreach (var peer in peers) {
-                    peer.StoreAsync(Guid.NewGuid().ToString()).Wait();
+                    peer.Store(Guid.NewGuid().ToString());
                 }
             } catch (Exception ex) {
                 Assert.Fail(ex.Message);
