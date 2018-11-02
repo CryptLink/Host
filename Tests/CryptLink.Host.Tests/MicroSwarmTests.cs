@@ -23,7 +23,7 @@ namespace CryptLink.Host.Tests
         public void SingleHostGetInfo()
         {
             var process = StartHost(5001);
-            WaitForPort(5001);
+            WaitForPort(5001, process);
             var peer = GetResponse<Entities.PeerInfo>("https://localhost:5001/info");
 
             //ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
@@ -44,9 +44,10 @@ namespace CryptLink.Host.Tests
 
             try {
                 for (int i = 1; i <= 20; i++) {
-                    processes.Add(StartHost(startingPort + i));
+                    var process = StartHost(startingPort + i);
+                    processes.Add(process);
 
-                    WaitForPort(startingPort + i);
+                    WaitForPort(startingPort + i, process);
 
                     var peerInfo = GetResponse<Entities.PeerInfo>($"https://localhost:{startingPort + i}/info");
                     Assert.NotNull(peerInfo);
@@ -67,8 +68,12 @@ namespace CryptLink.Host.Tests
         }
 
         public Process StartHost(int port) {
-            var exePath = Path.GetRelativePath(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location),
-                "../../../../../bin/Debug/netcoreapp2.1/CryptLink.Host.dll");
+            var testFolder = Path.GetDirectoryName(Assembly.GetAssembly(typeof(MicroSwarmTests)).Location);
+            var exePath = Path.GetRelativePath(testFolder, "../"); //bin/Debug/netcoreapp2.1/CryptLink.Host.dll");
+
+            if (exePath.Contains("..")) {
+                throw new Exception("Could not resolve relative path to CryptLink.Host.dll");
+            }
 
             var process = new Process() {
                 StartInfo = new ProcessStartInfo() {
@@ -82,12 +87,20 @@ namespace CryptLink.Host.Tests
             };
 
             process.Start();
+            
             return process;
         }
 
-        private void WaitForPort(int Port) {
+        private void WaitForPort(int Port, Process ProcessInfo) {
             while (!IsPortOpen("localhost", Port, new TimeSpan(0, 0, 5))) {
                 System.Threading.Thread.Sleep(500);
+
+                if(ProcessInfo != null && ProcessInfo.HasExited){
+                    var output = ProcessInfo.StandardOutput.ReadToEnd();
+                    var errors = ProcessInfo.StandardError.ReadToEnd();
+
+                    throw new Exception($"The host process exited, test will not be able to complete: \r\n Output: {output} \r\n Errors:{errors}");
+                }
             };
         }
 

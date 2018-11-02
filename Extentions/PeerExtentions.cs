@@ -9,30 +9,30 @@ using CryptLink.Host.Entities;
 namespace CryptLink.Host.Extentions {
     public static class PeerExtentions {
 
-        public static void SetCert(this Entities.PeerInfo For, Cert _Cert, HashProvider Provider) {
+        public static void SetCert(this PeerInfo For, Cert _Cert, HashProvider Provider) {
             For.Cert = _Cert;
             For.PublicKey = For.Cert.PublicKey.EncodedKeyValue.RawData;
             For.Cert.ComputeHash(Provider);
             For.ComputeHash(Provider);
         }
 
-        public static void Register(this Entities.PeerInfo ToPeer) {
+        public static void Register(this PeerInfo ToPeer) {
             ToPeer.SendQueue.Enqueue(ToPeer);
         }
 
-        public static void Store(this Entities.PeerInfo ToPeer, IHashable Item) {
+        public static void Store(this PeerInfo ToPeer, IHashable Item) {
             ToPeer.SendQueue.Enqueue(Item);
             ToPeer.ProcessSendQueue();
         }
 
-        public static void Store(this Entities.PeerInfo ToPeer, string Item) {
+        public static void Store(this PeerInfo ToPeer, string Item) {
             ToPeer.SendQueue.Enqueue(new HashableString(Item));
             ToPeer.ProcessSendQueue();
         }
 
         private static bool _processingSendQueue = false;
 
-        public static void ProcessSendQueue(this Entities.PeerInfo ToPeer) {
+        public static void ProcessSendQueue(this PeerInfo ToPeer) {
 
             if (_processingSendQueue == true) {
                 return;
@@ -65,8 +65,6 @@ namespace CryptLink.Host.Extentions {
                         }
                     });
 
-                    //asyncHandler.WebRequest.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
-
                 } else if (item.GetType() == typeof(PeerInfo)) {
                     var hItem = (PeerInfo)item;
 
@@ -90,7 +88,7 @@ namespace CryptLink.Host.Extentions {
             _processingSendQueue = false;
         }
 
-        public static async Task<Hash> UploadAsync(this Entities.PeerInfo ToPeer, Stream Item) {
+        public static async Task<Hash> UploadAsync(this PeerInfo ToPeer, Stream Item) {
             //ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 
             //var client = new RestClient(ToPeer.Address);
