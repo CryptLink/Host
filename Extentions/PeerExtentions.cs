@@ -16,30 +16,31 @@ namespace CryptLink.Host.Extentions {
             For.ComputeHash(Provider);
         }
 
-        public static void Register(this PeerInfo ToPeer) {
-            ToPeer.SendQueue.Enqueue(ToPeer);
+        /// <summary>
+        /// Registers another peer with this one
+        /// </summary>
+        /// <param name="ToPeer">Peer to registering into</param>
+        /// <param name="PeerToRegister">Peer you are regestering to this</param>
+        public static void RegisterPeer(this PeerInfo ToPeer, PeerInfo PeerToRegister) {
+            ToPeer.SendQueue.Enqueue(PeerToRegister);
         }
 
         public static void Store(this PeerInfo ToPeer, IHashable Item) {
             ToPeer.SendQueue.Enqueue(Item);
-            ToPeer.ProcessSendQueue();
+            ToPeer.ProcessPeerQueue();
         }
 
         public static void Store(this PeerInfo ToPeer, string Item) {
             ToPeer.SendQueue.Enqueue(new HashableString(Item));
-            ToPeer.ProcessSendQueue();
+            ToPeer.ProcessPeerQueue();
         }
 
         private static bool _processingSendQueue = false;
 
-        public static void ProcessSendQueue(this PeerInfo ToPeer) {
+        public static void ProcessPeerQueue(this PeerInfo ToPeer) {
 
             if (_processingSendQueue == true) {
                 return;
-            }
-
-            if (ToPeer.LastRegistered == null) {
-                ToPeer.Register();
             }
 
             IHashable item;
@@ -48,37 +49,11 @@ namespace CryptLink.Host.Extentions {
             ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 
             while (ToPeer.SendQueue.TryDequeue(out item)) {
-                var client = new RestClient(ToPeer.Address);
 
                 if (item.GetType() == typeof(HashableString)) {
-                    var hItem = (HashableString)item;
-
-                    var request = new RestRequest("store", Method.POST);
-                    request.AddParameter("value", hItem.Value);
-
-                    var asyncHandler = client.ExecuteAsync<Hash>(request, r => {
-                        
-                        if (r.ResponseStatus == ResponseStatus.Completed) {
-                            ToPeer.KnownObjects.AddOrUpdate(r.Data, DateTime.Now, (k,v) => DateTime.Now);
-                        } else {
-                            ToPeer.Errors.Add($"{DateTime.Now} Error posting {hItem.ComputedHash.ToString()}, {r}");
-                        }
-                    });
-
+                    ToPeer.RequestStoreString((HashableString)item);
                 } else if (item.GetType() == typeof(PeerInfo)) {
-                    var hItem = (PeerInfo)item;
-
-                    var request = new RestRequest("register", Method.POST);
-                    request.AddParameter("peer", hItem);
-
-                    var asyncHandler = client.ExecuteAsync<Hash>(request, r => {
-
-                        if (r.ResponseStatus == ResponseStatus.Completed) {
-                            ToPeer.KnownObjects.AddOrUpdate(r.Data, DateTime.Now, (k, v) => DateTime.Now);
-                        } else {
-                            ToPeer.Errors.Add($"{DateTime.Now} Error posting {hItem.ComputedHash.ToString()}, {r}");
-                        }
-                    });
+                    ToPeer.RequestRegister((PeerInfo)item);
                 } else {
                     //unsupported type
                     ToPeer.Errors.Add($"{DateTime.Now} Error posting {item.ComputedHash.ToString()}, unknown type: {item.GetType().ToString()}");
@@ -86,6 +61,36 @@ namespace CryptLink.Host.Extentions {
             }
 
             _processingSendQueue = false;
+        }
+
+        private static void RequestRegister(this PeerInfo ToPeer, PeerInfo Item) {
+            var client = new RestClient(ToPeer.Address);
+            var request = new RestRequest("register", Method.POST);
+            request.AddParameter("peer", Item);
+
+            var asyncHandler = client.ExecuteAsync<Hash>(request, r => {
+
+                if (r.ResponseStatus == ResponseStatus.Completed) {
+                    ToPeer.KnownObjects.AddOrUpdate(r.Data, DateTime.Now, (k, v) => DateTime.Now);
+                } else {
+                    ToPeer.Errors.Add($"{DateTime.Now} Error posting {Item.ComputedHash.ToString()}, {r}");
+                }
+            });
+        }
+
+        private static void RequestStoreString(this PeerInfo ToPeer, HashableString Item) {
+            var client = new RestClient(ToPeer.Address);
+            var request = new RestRequest("store", Method.POST);
+            request.AddParameter("value", Item.Value);
+
+            var asyncHandler = client.ExecuteAsync<Hash>(request, r => {
+
+                if (r.ResponseStatus == ResponseStatus.Completed) {
+                    ToPeer.KnownObjects.AddOrUpdate(r.Data, DateTime.Now, (k, v) => DateTime.Now);
+                } else {
+                    ToPeer.Errors.Add($"{DateTime.Now} Error posting {Item.ComputedHash.ToString()}, {r}");
+                }
+            });
         }
 
         public static async Task<Hash> UploadAsync(this PeerInfo ToPeer, Stream Item) {

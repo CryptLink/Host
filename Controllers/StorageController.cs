@@ -35,12 +35,19 @@ namespace CryptLink.Host.Controllers {
             }
         }
 
+
+        [HttpGet("/")]
+        public object GetDefault() {
+            return Ok("Root");
+        }
+
         /// <summary>
         /// Gets a standard type
         /// </summary>
         /// <param name="hash"></param>
         /// <returns></returns>
         [HttpGet("get/{hash}/{type}")]
+        [RequestSizeLimit(4096)]
         public object Get([FromRoute]string hash, [FromRoute]string type) {
             if (hash == null) {
                 throw new FileNotFoundException();
@@ -113,14 +120,18 @@ namespace CryptLink.Host.Controllers {
                 if (asBinary) {
                     return item.Value;
                 } else {
-                    var encoding = new ASCIIEncoding();
-                    return encoding.GetString(item.Value);
+                    if (item.Value.Length > HostInfo.MaxStoreLength) {
+                        var encoding = new ASCIIEncoding();
+                        return encoding.GetString(item.Value);
+                    } else {
+                        throw new InvalidCastException("Item is not text");
+                    }
                 }
-
             }
         }
 
         [HttpPost("store")]
+        [RequestSizeLimit(65536)]
         public Hash StoreString([FromForm] string value) {
 
             if (value == null) {
