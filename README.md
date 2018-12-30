@@ -5,6 +5,9 @@ In it's current state
 
 ## Config
 You may config the kestrel endpoints in appsettings.json
+https://github.com/aspnet/Docs/blob/master/aspnetcore/fundamentals/servers/kestrel.md
+
+
 
 ``` json
 "Kestrel": {
@@ -54,12 +57,14 @@ You may config the kestrel endpoints in appsettings.json
 
 Or by command line: 
 
-`dotnet run --server.urls "http://localhost:5100;http://localhost:5101;http://*:5102"`
+`dotnet run --server.urls "http://localhost:5100;http://*:5102"`
 
 Or the environment variable: `CL_ASPNETCORE_URLS`
 
+### Certificates
+You may specify a specific certificate in the above config
+
+TBD: Self signed, ACME
+
 ### Limits
 https://docs.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.server.kestrel.core.kestrelserverlimits?view=aspnetcore-2.1
-
-# CryptLink.Host.Deploy
-A simple tool to seed an empy host with HTML files
