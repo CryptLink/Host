@@ -78,6 +78,24 @@ namespace CryptLink.Host.Extentions {
             });
         }
 
+        private static Task<T> RequestItem<T>(this PeerInfo ToPeer, Hash Item) {
+
+            var client = new RestClient(ToPeer.Address);
+            var request = new RestRequest($"get/{Item.ToString()}", Method.GET);
+
+                        
+
+
+            var asyncHandler = client.ExecuteAsync<byte[]>(request, r => {
+
+                if (r.ResponseStatus == ResponseStatus.Completed) {
+                    ToPeer.KnownObjects.AddOrUpdate(Hash.FromComputedBytes(r.Data, ), DateTime.Now, (k, v) => DateTime.Now);
+                } else {
+                    ToPeer.Errors.Add($"{DateTime.Now} Error posting {Item.ComputedHash.ToString()}, {r}");
+                }
+            });
+        }
+
         private static void RequestStoreString(this PeerInfo ToPeer, HashableString Item) {
             var client = new RestClient(ToPeer.Address);
             var request = new RestRequest("store", Method.POST);

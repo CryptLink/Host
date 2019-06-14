@@ -17,24 +17,21 @@ using Microsoft.AspNetCore.Connections;
 using Newtonsoft.Json.Linq;
 using System.Collections.Concurrent;
 
-namespace CryptLink.Host
-{
-    public class Program
-    {
-        public static Cert HostCert = new CertBuilder() { KeyStrength = 2048, SubjectName = "CN=CryptLinkDefault" }.BuildCert();
-        //public static int Port = 5001;
+namespace CryptLink.Host {
+    public class Program {
 
         private static string ConfigFile = "appsettings.json";
 
-        public static void Main(string[] args)
-        {
-            if (args.Count() == 1) {
-                ConfigFile = args[0];
-            }
+        public static void Main(string[] args) {
+            //if (args.Count() == 1) {
+            //    ConfigFile = args[0];
+            //}
 
-            if (!File.Exists(ConfigFile)) {
-                throw new FileLoadException($"The config file: '{ConfigFile}' does not exist, can't start the application");
-            }
+            //if (!File.Exists(ConfigFile)) {
+            //    throw new FileLoadException($"The config file: '{ConfigFile}' does not exist, can't start the application");
+            //} else {
+
+            //}
 
             CreateWebHostBuilder(args).Build().Run();
         }
@@ -50,20 +47,33 @@ namespace CryptLink.Host
             //    });
             //});
 
+            //load the settings file manually so we can do a recursive search
+            //var settings = new Settings();
+            //File.WriteAllText("Settings.json", Newtonsoft.Json.JsonConvert.SerializeObject(settings));
+
+            var config = new ConfigurationBuilder()
+            //.AddJsonFile(ConfigFile, optional: false, reloadOnChange: true)
+            .AddEnvironmentVariables(prefix: "CL_")
+            .AddCommandLine(args)
+            .Build();
 
             //Load the json so we can check if any certs have been specified
             var configJson = JObject.Parse(File.ReadAllText(ConfigFile));
             var certificates = configJson.SelectToken("$.Kestrel..Certificates");
             var certificate = configJson.SelectToken("$.Kestrel..Certificate");
 
-            var config = new ConfigurationBuilder()
-                .AddJsonFile(ConfigFile, optional: false, reloadOnChange: true)
-                .AddEnvironmentVariables(prefix: "CL_")
-                .AddCommandLine(args)
-                .Build();
+            //todo: replace this with a more rebust way to select and use certs
+            Cert HostCert = new CertBuilder() { KeyStrength = 2048, SubjectName = "CN=CryptLinkDefault" }.BuildCert();
+            Console.WriteLine($"Cert: {HostCert.Thumbprint}");
 
-            //look for a cert
+            if ((certificate != null && certificate.Count() > 0) ||
+                (certificates != null && certificates.Count() > 0)) {
+                //no certs found, generate a new cert
+                //HostCert = new CertBuilder() { KeyStrength = 2048, SubjectName = "CN=CryptLinkDefault" }.BuildCert();
+                Console.WriteLine("No cert specified in appsettings.json");
+            }
 
+            // all certs available to the host
             var certs = new ConcurrentDictionary<string, X509Certificate2>();
 
             var host = new WebHostBuilder()
@@ -75,15 +85,18 @@ namespace CryptLink.Host
                             X509Certificate2 cert = null;
 
                             if (name != null && certs.TryGetValue(name, out cert)) {
+                                // try and find by name
                                 return cert;
                             }
 
+                            // default
                             return HostCert.GetX509Certificate();
                         };
                     });
                 })
                 .UseStartup<Startup>();
 
+            // simple setup
             //var host2 = new WebHostBuilder().
             //    options.Configure(config.Configuration.GetSection("Kestrel"))
             //.Endpoint("HTTPS", opt => {
@@ -93,7 +106,7 @@ namespace CryptLink.Host
             return host;
         }
 
-        
+
 
     }
 }

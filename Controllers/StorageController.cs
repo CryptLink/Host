@@ -31,7 +31,7 @@ namespace CryptLink.Host.Controllers {
                     Address = $"{Request.Scheme}://{Request.Host}"
                 };
 
-                HostInfo.SetCert(Program.HostCert, provider);
+                //!todoHostInfo.SetCert(Program.HostCert, provider);
             }
         }
 
@@ -40,6 +40,18 @@ namespace CryptLink.Host.Controllers {
         public object GetDefault() {
             return Ok("Root");
         }
+
+        /// <summary>
+        /// Gets a standard type
+        /// </summary>
+        /// <param name="hash"></param>
+        /// <returns></returns>
+        [HttpGet("get/{hash}")]
+        [RequestSizeLimit(4096)]
+        public object Get([FromRoute]string hash) {
+            return Get(hash, "binary");
+        }
+
 
         /// <summary>
         /// Gets a standard type

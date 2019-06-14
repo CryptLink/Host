@@ -22,7 +22,7 @@ namespace CryptLink.Host.Entities
         public ConcurrentQueue<IHashable> SendQueue { get; set; } = new ConcurrentQueue<IHashable>();
 
         [JsonIgnore]
-        public ConcurrentDictionary<Hash, DateTime> KnownObjects { get; set; } = new ConcurrentDictionary<Hash, DateTime>();
+        public ConcurrentDictionary<byte[], DateTime> KnownObjects { get; set; } = new ConcurrentDictionary<byte[], DateTime>();
 
         [JsonIgnore]
         public ConcurrentBag<string> Errors { get; set; } = new ConcurrentBag<string>();

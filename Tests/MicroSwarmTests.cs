@@ -31,6 +31,8 @@ namespace CryptLink.Host.Tests
             ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
             peer.Store(Guid.NewGuid().ToString());
 
+            peer.GetItem();
+
             Assert.NotNull(peer);
             process.Kill();
         }
@@ -78,8 +80,8 @@ namespace CryptLink.Host.Tests
                 //get every message from every peer
                 foreach (var peer in peers) {
                     foreach (var message in allMessages) {
-                        //peer.GetItem(message);
-                        throw new NotImplementedException();
+                        var mi = peer.GetItem(message);
+                        
                     }
                 }
 
@@ -113,7 +115,7 @@ namespace CryptLink.Host.Tests
             var process = new Process() {
                 StartInfo = new ProcessStartInfo() {
                     FileName = "dotnet",
-                    Arguments = $"exec \"{exePath}\" {port}",
+                    Arguments = $"exec \"{exePath}\" --server.urls https://0.0.0.0:{port}",
                     RedirectStandardOutput = true,
                     RedirectStandardInput = true,
                     UseShellExecute = false,
